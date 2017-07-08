@@ -1,0 +1,7 @@
+This minecraft mod, Smart Moving, including all parts herein,
+is licensed under the GNU General Public License Version 3 or later.
+
+Homepage: http://www.minecraftforum.net/forums/mapping-and-modding/minecraft-mods/1274224
+
+You should have received a copy of the GNU General Public License along with Smart Moving.
+If not, see <http://www.gnu.org/licenses/>.

@@ -1,0 +1,71 @@
+# Translated by Cassiobsk8
+
+#===========#
+# Key Names #
+#===========#
+
+key.climb=Agarrar
+
+
+
+#====================================#
+# Configuration change chat messages #
+#====================================#
+
+# Used to announce whether a global or local Smart Moving configuration is used
+move.config.chat.server.global.unnamed=Usando configuração do server para o Smart Moving
+move.config.chat.server.global.named=Usando configuração do server para o Smart Moving '%s'
+move.config.chat.server.local=Usando configurações locais para o Smart Moving
+
+# Used when the Smart Moving configuration is changed by the server
+move.config.chat.server.disable=Smart Moving foi desativado pela configuração do servidor
+move.config.chat.server.update.named=Configuração do server do Smart Moving foi definida para '%s'
+move.config.chat.server.update.unnamed=Configuração do server do Smart Moving foi atualizada
+move.config.chat.server.enable=Smart Moving foi habilitado pela configuração do servidor
+
+# Used when the Smart Moving configuration is changed by another player
+move.config.chat.server.disable.user=Smart Moving desativado por '%s'
+move.config.chat.server.update.named.user=Smart Moving definido para '%s' por '%s'
+move.config.chat.server.update.unnamed.user=Configuração do server do Smart Moving foi atualizado por '%s'
+move.config.chat.server.enable.user=Smart Moving ativado por '%s'
+
+# Used when a player with no rights tries to change the Smart Moving configuration
+move.config.chat.server.illegal.remote=Você não tem direitos para alterar a configuração do Smart Moving no servidor remoto.
+move.config.chat.server.illegal.local=Você não tem direitos para alterar a configuração do Smart Moving em seu servidor local.
+
+# Used when a player changes the Smart Moving configuration for himself alone
+move.config.chat.client.disabled=Smart Moving desabilitado
+move.config.chat.client.enabled=Smart Moving habilitado
+move.config.chat.client.unnamed=Smart Moving definido para tecla '%s'
+move.config.chat.client.named=Smart Moving definido para '%s'
+move.config.chat.client.help=(Mude precionando '%s')
+
+# Used when a player changes the Smart Moving configuration for everybody
+move.config.chat.client.everyone.disabled=Smart Moving desabilitado para todos os jogadores
+move.config.chat.client.everyone.enabled=Smart Moving habilitado para todos os jogadores
+move.config.chat.client.everyone.unnamed=Smart Moving definido para tecla '%s' para todos os jogadores
+move.config.chat.client.everyone.named=Smart Moving definido para '%s' para todos os jogadores
+
+
+
+#============================#
+# Speed change chat messages #
+#============================#
+
+# Used when the Smart Moving speed is changed by another player
+move.speed.chat.server.change=Smart Moving velocidade alterada para %s%% pelo '%s'
+move.speed.chat.server.reset=Smart Moving velocidade alterada para 100%% pelo '%s'
+
+# Used when a player with no rights tries to change the Smart Moving speed
+move.speed.chat.server.illegal.remote=Você não tem direitos para alterar a velocidade do Smart Moving no servidor remoto.
+move.speed.chat.server.illegal.local=Você não tem direitos para alterar a velocidade do Smart Moving em seu servidor local.
+
+# Used when a player changes the Smart Moving speed for himself alone
+move.speed.chat.client.init=Velocidade do Smart Moving é %s%%
+move.speed.chat.client.help=(Aumente a velocidade precionando '%s', e diminua precionando '%s')
+move.speed.chat.client.change=Velocidade do Smart Moving mudada para %s%%
+move.speed.chat.client.reset=Velocidade do Smart Moving mudada para 100%%
+
+# Used when a player changes the Smart Moving speed for everybody
+move.speed.chat.client.everyone.change=Velocidade do Smart Moving mudada para %s%% para todos os jogadores
+move.speed.chat.client.everyone.reset=Velocidade do Smart Moving mudada para 100%% para todos os jogadores

@@ -1,0 +1,72 @@
+﻿# Translated by _DarKShaM_
+
+#===========#
+# Key Names #
+#===========#
+
+key.climb=Захват
+key.config.toggle=Изменение Конфигурации
+key.speed.increase=Увеличение Скорости
+key.speed.decrease=Снижение Скорости
+
+#====================================#
+# Configuration change chat messages #
+#====================================#
+
+# Используется, для объявления, какая конфигурация используется - серверная или локальная
+move.config.chat.server.global.unnamed=Используется серверная конфигурация Smart Moving
+move.config.chat.server.global.named=Используется серверная конфигурация Smart Moving '%s'
+move.config.chat.server.local=Используется локальная конфигурация Smart Moving
+
+# Используется, когда конфигурацию Smart Moving будет изменена сервером
+move.config.chat.server.disable=Smart Moving отключен настройками сервера
+move.config.chat.server.update.named=Конфигурация сервера Smart Moving установлена на '%s'
+move.config.chat.server.update.unnamed=Конфигурация сервера Smart Moving обновлена
+move.config.chat.server.enable=Smart Moving включен настройками сервера
+
+# Используется, когда конфигурацию Smart Moving будет изменена игроком
+move.config.chat.server.disable.user=Smart Moving отключен пользователем '%s'
+move.config.chat.server.update.named.user=Конфигурация сервера Smart Moving установлена с '%s' на '%s'
+move.config.chat.server.update.unnamed.user=Конфигурация сервера Smart Moving была обновлена пользователем '%s'
+move.config.chat.server.enable.user=Smart Moving включен пользователем '%s'
+
+# Используется, когда игрок, не обладающий необходимыми правами, пытается изменить конфигурацию Smart Moving
+move.config.chat.server.illegal.remote=У вас нет прав для изменения конфигурации Smart Moving на удаленном сервере.
+move.config.chat.server.illegal.local=У вас нет прав для изменения конфигурации Smart Moving на локальном сервере.
+
+# Используется, когда игрок меняет конфигурацию Smart Moving только для себя
+move.config.chat.client.disabled=Smart Moving отключен
+move.config.chat.client.enabled=Smart Moving включен
+move.config.chat.client.unnamed=Smart Moving установлен на конфигурацию '%s'
+move.config.chat.client.named=Smart Moving установлен на '%s'
+move.config.chat.client.help=(переключать при помощи '%s')
+
+# Используется, когда игрок меняет конфигурацию Smart Moving для всех
+move.config.chat.client.everyone.disabled=Smart Moving отключен для всех игроков
+move.config.chat.client.everyone.enabled=Smart Moving включен для всех игроков
+move.config.chat.client.everyone.unnamed=Smart Moving установлен на конфигурацию '%s' для всех игроков
+move.config.chat.client.everyone.named=Smart Moving установлен на '%s' для всех игроков
+
+
+
+#============================#
+# Speed change chat messages #
+#============================#
+
+# Используется, когда скорость движения для Smart Moving изменяется другим игроком
+move.speed.chat.server.change=Скорость движения для Smart Moving установлена на %s%% игроком '%s'
+move.speed.chat.server.reset=Скорость движения для Smart Moving установлена на 100%% игроком '%s'
+
+# Используется, когда игрок, не обладающий необходимыми правами, пытается изменить скорость движения для Smart Moving
+move.speed.chat.server.illegal.remote=У вас нет прав для изменения скорости движения Smart Moving на удаленном сервере.
+move.speed.chat.server.illegal.local=У вас нет прав для изменения скорости движения Smart Moving на локальном сервере.
+
+# Используется, когда игрок меняет скорость Smart Moving только для себя
+move.speed.chat.client.init=Скорость движения Smart Moving %s%%
+move.speed.chat.client.help=(Что бы увеличить скорость, нажмите '%s', для уменьшения - '%s')
+move.speed.chat.client.change=Скорость движения Smart Moving установлена на %s%%
+move.speed.chat.client.reset=Скорость движения Smart Moving установлена на 100%%
+
+# Используется, когда игрок меняет скорость Smart Moving для всех
+move.speed.chat.client.everyone.change=Скорость движения Smart Moving установлена на %s%% для всех игроков
+move.speed.chat.client.everyone.reset=Скорость движения Smart Moving установлена на 100%% для всех игроков

@@ -1,0 +1,11 @@
+[{
+  "modid": "SmartMoving",
+  "name": "Smart Moving",
+  "version": "16.3",
+  "mcversion": "1.8.9",
+  "description": "The Smart Moving mod provides various additional moving possibilities:\n\n * Climbing only via gaps in the walls\n * Climbing ladders with different speeds depending on ladder coverage and/or neighbour blocks\n * Alternative animations for flying and falling\n * Climbing along ceilings and up vines\n * Jumping up & back while climbing\n * Configurable sneaking\n * Alternative swimming\n * Alternative diving\n * Alternative flying\n * Faster sprinting\n * Side & Back jumps\n * Charged jumps\n * Wall jumping\n * Head jumps\n * Crawling\n * Sliding",
+  "credits": "_DarKShaM_, Cassiobsk8, Dunncann for translations",
+  "url": "http://www.minecraftforum.net/topic/361430-",
+  "authors": [ "Divisor" ],
+  "dependencies": [ "SmartRender", "SmartCore" ]
+}]

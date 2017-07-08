@@ -1,0 +1,74 @@
+# Translated by Dunncann
+
+#===========#
+# Key Names #
+#===========#
+
+key.climb=Grijp
+key.config.toggle=Configuratie Aanpassen
+key.speed.increase=Sneller
+key.speed.decrease=Langzamer
+
+
+
+#====================================#
+# Configuration change chat messages #
+#====================================#
+
+# Used to announce whether a global or local Smart Moving configuration is used
+move.config.chat.server.global.unnamed=Smart Moving server-configuratie wordt gebruikt
+move.config.chat.server.global.named=Smart Moving server-configuratie '%s' wordt gebruikt
+move.config.chat.server.local=Locale Smart Moving configuraties worden gebruikt
+
+# Used when the Smart Moving configuration is changed by the server
+move.config.chat.server.disable=Smart Moving is uitgeschakeld door de server-configuratie
+move.config.chat.server.update.named=Smart Moving server configuratie is ingesteld op '%s'
+move.config.chat.server.update.unnamed=Smart Moving server configuratie is geupdate
+move.config.chat.server.enable=Smart Moving is ingeschakeld door de server-configuratie
+
+# Used when the Smart Moving configuration is changed by another player
+move.config.chat.server.disable.user=Smart Moving uitgeschakeld door '%s'
+move.config.chat.server.update.named.user=Smart Moving ingesteld op '%s' door '%s'
+move.config.chat.server.update.unnamed.user=Smart Moving server-configuratie is geupdate door '%s'
+move.config.chat.server.enable.user=Smart Moving ingeschakeld door '%s'
+
+# Used when a player with no rights tries to change the Smart Moving configuration
+move.config.chat.server.illegal.remote=Je hebt geen toestemming in de Smart Moving configuratie op de remote-server aan te passen.
+move.config.chat.server.illegal.local=Je hebt geen toestemming in de Smart Moving configuratie op de locale server aan te passen.
+
+# Used when a player changes the Smart Moving configuration for himself alone
+move.config.chat.client.disabled=Smart Moving uitgeschakeld
+move.config.chat.client.enabled=Smart Moving ingeschakeld
+move.config.chat.client.unnamed=Smart Moving ingesteld op de knop '%s'
+move.config.chat.client.named=Smart Moving veranderd naar '%s'
+move.config.chat.client.help=(pas aan d.m.v. '%s')
+
+# Used when a player changes the Smart Moving configuration for everybody
+move.config.chat.client.everyone.disabled=Smart Moving uitgeschakeld voor alle spelers
+move.config.chat.client.everyone.enabled=Smart Moving ingeschakeld voor alle spelers
+move.config.chat.client.everyone.unnamed=Smart Moving veranderd naar de knop '%s' voor alle spelers
+move.config.chat.client.everyone.named=Smart Moving veranderd naar '%s' voor alle spelers
+
+
+
+#============================#
+# Speed change chat messages #
+#============================#
+
+# Used when the Smart Moving speed is changed by another player
+move.speed.chat.server.change=Smart Moving snelheid veranderd naar %s%% door '%s'
+move.speed.chat.server.reset=Smart Moving snelheid veranderd naar 100%% door '%s'
+
+# Used when a player with no rights tries to change the Smart Moving speed
+move.speed.chat.server.illegal.remote=Je hebt geen toestemming om de Smart Moving snelheid op de remote server aan te passen.
+move.speed.chat.server.illegal.local=Je hebt geen toestemming om de Smart Moving snelheid op de locale server aan te passen.
+
+# Used when a player changes the Smart Moving speed for himself alone
+move.speed.chat.client.init=Smart Moving snelheid is %s%%
+move.speed.chat.client.help=(verhoog de snelheid met '%s', verminder de snelheid met '%s')
+move.speed.chat.client.change=Smart Moving snelheid veranderd naar %s%%
+move.speed.chat.client.reset=Smart Moving veranderd naar 100%%
+
+# Used when a player changes the Smart Moving speed for everybody
+move.speed.chat.client.everyone.change=Smart Moving snelheid veranderd naar %s%% voor alle spelers
+move.speed.chat.client.everyone.reset=Smart Moving snelheid veranderd naar 100%% voor alle spelers
