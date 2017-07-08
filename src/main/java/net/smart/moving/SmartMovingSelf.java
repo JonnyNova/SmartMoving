@@ -21,7 +21,6 @@ import java.lang.reflect.*;
 import java.util.*;
 
 import net.minecraft.block.*;
-import net.minecraft.block.Block.*;
 import net.minecraft.client.*;
 import net.minecraft.client.gui.*;
 import net.minecraft.client.gui.inventory.*;
@@ -29,16 +28,22 @@ import net.minecraft.client.settings.*;
 import net.minecraft.entity.*;
 import net.minecraft.entity.ai.attributes.*;
 import net.minecraft.entity.player.*;
-import net.minecraft.entity.player.EntityPlayer.*;
 import net.minecraft.item.*;
 import net.minecraft.nbt.*;
 import net.minecraft.potion.*;
 import net.minecraft.stats.*;
 import net.minecraft.util.*;
 
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.smart.moving.config.*;
 import net.smart.moving.render.*;
 import net.smart.utilities.*;
+
+import static net.smart.render.SmartRenderUtilities.RadiantToAngle;
+import static net.smart.render.SmartRenderUtilities.getAngle;
+import static net.smart.render.SmartRenderUtilities.getHorizontalCollisionangle;
 
 @SuppressWarnings("static-access")
 public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
@@ -47,10 +52,15 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 	private int multiPlayerInitialized;
 	private int updateCounter;
 	private float distanceSwom;
+	private EntityPlayer sp;
+
+	private final Potion jumpBoost = Potion.REGISTRY.getObject(new ResourceLocation("jump_boost"));
 
 	public SmartMovingSelf(EntityPlayer sp, IEntityPlayerSP isp)
 	{
 		super(sp, isp);
+
+		this.sp = sp;
 
 		initialized = false;
 
@@ -140,20 +150,22 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 	{
 		float speedFactor = getSpeedFactor();
 
-		if (sp.isUsingItem())
+		if (sp.getItemInUseCount() > 0)
 		{
 			float itemFactor = 0.2F;
 			if(Config.enabled)
 			{
-				Item item = sp.getItemInUse().getItem();
-				if(item instanceof ItemSword)
-					itemFactor = Config._usageSwordSpeedFactor.value;
-				else if(item instanceof ItemBow)
-					itemFactor = Config._usageBowSpeedFactor.value;
-				else if(item instanceof ItemFood)
-					itemFactor = Config._usageFoodSpeedFactor.value;
-				else
-					itemFactor = Config._usageSpeedFactor.value;
+				if(sp.getActiveItemStack() != null) {
+					Item item = sp.getActiveItemStack().getItem();
+					if(item instanceof ItemSword)
+						itemFactor = Config._usageSwordSpeedFactor.value;
+					else if(item instanceof ItemBow)
+						itemFactor = Config._usageBowSpeedFactor.value;
+					else if(item instanceof ItemFood)
+						itemFactor = Config._usageFoodSpeedFactor.value;
+					else
+						itemFactor = Config._usageSpeedFactor.value;
+				}
 			}
 			speedFactor *= itemFactor;
 		}
@@ -207,7 +219,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 			float wasHeightOffset = heightOffset;
 
 			boolean useStandard = !Config.isSwimmingEnabled() && !Config.isDivingEnabled();
-			if(sp.ridingEntity != null)
+			if(sp.isRiding())
 			{
 				resetSwimming();
 				useStandard = true;
@@ -506,7 +518,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 						}
 
 						if(moveFlying)
-							sp.moveFlying(moveStrafing, moveForward, 0.02F * speedFactor);
+							moveFlying(0f, moveStrafing, moveForward, 0.02F * speedFactor, false);
 						sp.moveEntity(sp.motionX, sp.motionY, sp.motionZ);
 					}
 				}
@@ -528,7 +540,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 					setHeightOffset(wasHeightOffset);
 
 				double dY = sp.posY;
-				sp.moveFlying(moveStrafing, moveForward, 0.02F * speedFactor);
+				moveFlying(0f, moveStrafing, moveForward, 0.02F, false);
 				sp.moveEntity(sp.motionX, sp.motionY, sp.motionZ);
 
 				sp.motionX *= 0.80000001192092896D;
@@ -555,7 +567,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 			resetSwimming();
 
 			double d1 = sp.posY;
-			sp.moveFlying(moveStrafing, moveForward, 0.02F);
+			moveFlying(0f, moveStrafing, moveForward, 0.02F, false);
 			sp.moveEntity(sp.motionX, sp.motionY, sp.motionZ);
 			sp.motionX *= 0.5D;
 			sp.motionY *= 0.5D;
@@ -652,14 +664,14 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 			horizontalDamping = HorizontalAirDamping;
 
 		if(isClimbing && climbingUpIsBlockedByLadder())
-			sp.moveFlying(0F, -1F, 0.07F);
+			moveFlying(0.07F, moveStrafing, moveForward, 0.07F, true);
 		else if(isClimbing && climbingUpIsBlockedByTrapDoor())
 			if(sp.isOnLadder())
-				sp.moveFlying(0F, -1F, 0.09F);
+				moveFlying(0F, moveStrafing, moveForward, 0.09F, true);
 			else
-				sp.moveFlying(0F, -1F, 0.09F);
+				moveFlying(0F, moveStrafing, moveForward, 0.09F, true);
 		else if(isClimbing && climbingUpIsBlockedByCobbleStoneWall())
-			sp.moveFlying(0F, -1F, 0.07F);
+			moveFlying(0F, moveStrafing, moveForward, 0.07F, true);
 		else if(!isSliding)
 		{
 			if(isHeadJumping)
@@ -673,7 +685,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 			if(Config.isRunningEnabled() && isRunning() && !isFast)
 				speedFactor *= Config._runFactor.value;
 
-			sp.moveFlying(moveStrafing, moveForward, rawSpeed * speedFactor);
+			moveFlying(0F, moveStrafing, moveForward, rawSpeed * speedFactor, false);
 		}
 
 		if(sp.onGround && !isJumping)
@@ -923,7 +935,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 						Orientation ladderOrientation = Orientation.getKnownLadderOrientation(sp.worldObj, i, j + 2, k);
 						int remote_i = i + ladderOrientation._i;
 						int remote_k = k + ladderOrientation._k;
-						if(!getBlock(remote_i, j, remote_k).getMaterial().isSolid() && !getBlock(remote_i, j + 1, remote_k).getMaterial().isSolid())
+						if(!getState(remote_i, j, remote_k).getMaterial().isSolid() && !getState(remote_i, j + 1, remote_k).getMaterial().isSolid())
 							handsClimbing = HandsClimbing.None;
 					}
 
@@ -1148,7 +1160,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 			boolean isVerticalStill = Math.abs(diffY) < 0.007;
 			boolean isStill = isStanding && isVerticalStill;
 
-			if(sp.ridingEntity == null)
+			if(!sp.isRiding())
 			{
 				float horizontalMovement = MathHelper.sqrt_double(diffX * diffX + diffZ * diffZ);
 				float movement = MathHelper.sqrt_double(horizontalMovement * horizontalMovement + diffY * diffY);
@@ -1225,8 +1237,6 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 
 				exhaustion += additionalExhaustion;
 			}
-			else
-				hungerIncrease = -1;
 
 			if(exhaustion > 0)
 			{
@@ -1257,14 +1267,9 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 			foreignMaxExhaustionForAction = Float.MAX_VALUE;
 			foreignMaxExhaustionToStartAction = Float.MAX_VALUE;
 		}
-		else
-			hungerIncrease = -1;
 
-		if(hungerIncrease != lastHungerIncrease)
-		{
-			SmartMovingPacketStream.sendHungerChange(SmartMovingComm.instance, hungerIncrease);
-			lastHungerIncrease = hungerIncrease;
-		}
+		sp.addExhaustion(hungerIncrease);
+		SmartMovingPacketStream.sendHungerChange(SmartMovingComm.instance, hungerIncrease);
 	}
 
 	@Override
@@ -1589,9 +1594,9 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 				nextClimbDistance++;
 				if(stepBlock != null)
 				{
-					SoundType stepsound = stepBlock.stepSound;
+					SoundType stepsound = stepBlock.getSoundType(stepBlock.getDefaultState(), sp.worldObj, sp.getPosition(), sp);
 					if(stepsound != null)
-						playSound(stepsound.getStepSound(), stepsound.getVolume() * 0.15F, stepsound.getFrequency());
+						playSound(stepsound.getStepSound(), stepsound.getVolume() * 0.15F, stepsound.getPitch());
 				}
 			}
 		}
@@ -1609,20 +1614,25 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 		}
 	}
 
-	private void playSound(String id, float volume, float pitch)
-	{
-		Minecraft.getMinecraft().theWorld.playSound(sp.posX, sp.posY, sp.posZ, id, volume, pitch, false);
-		SmartMovingPacketStream.sendSound(SmartMovingComm.instance, id, volume, pitch);
+	private void playSound(SoundEvent soundEvent, float volume, float pitch) {
+		sp.worldObj.playSound(sp, new BlockPos(sp.posX, sp.posY, sp.posZ), soundEvent, sp.getSoundCategory(), volume, pitch);
+		SmartMovingPacketStream.sendSound(SmartMovingComm.instance, soundEvent.getSoundName().toString(), volume, pitch);
 	}
 
-	@SuppressWarnings("unused")
+	private void playSound(String id, float volume, float pitch)
+	{
+		SoundEvent soundEvent = SoundUtil.getSoundEvent(id);
+		if(soundEvent != null)
+			playSound(soundEvent, volume, pitch);
+	}
+
 	public void beforeSleepInBedAt(int i, int j, int k)
 	{
 		if(!isp.getSleepingField())
 			updateEntityActionState(true);
 	}
 
-	public EnumStatus sleepInBedAt(int i, int j, int k)
+	public EntityPlayer.SleepResult sleepInBedAt(int i, int j, int k)
 	{
 		beforeSleepInBedAt(i, j, k);
 		return isp.localSleepInBedAt(i, j, k);
@@ -1631,7 +1641,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 	private void resetHeightOffset()
 	{
 		AxisAlignedBB bb = getBoundingBox();
-		bb = AxisAlignedBB.fromBounds(bb.minX, bb.minY + heightOffset, bb.minZ, bb.maxX, bb.maxY, bb.maxZ);
+		bb = new AxisAlignedBB(bb.minX, bb.minY + heightOffset, bb.minZ, bb.maxX, bb.maxY, bb.maxZ);
 		setBoundingBox(bb);
 		sp.height -= heightOffset;
 		heightOffset = 0F;
@@ -1652,7 +1662,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 		heightOffset = offset;
 
 		AxisAlignedBB bb = getBoundingBox();
-		bb = AxisAlignedBB.fromBounds(bb.minX, bb.minY - heightOffset, bb.minZ, bb.maxX, bb.maxY, bb.maxZ);
+		bb = new AxisAlignedBB(bb.minX, bb.minY - heightOffset, bb.minZ, bb.maxX, bb.maxY, bb.maxZ);
 		setBoundingBox(bb);
 		sp.height += heightOffset;
 	}
@@ -1971,7 +1981,14 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 				maxExhaustionForAction = Math.min(maxExhaustionForAction, maxExhausionForJump + Config.getJumpExhaustionGain(speed, type, jumpCharge));
 			}
 
-			float jumpFactor = sp.isPotionActive(Potion.jump) ? 1 + (sp.getActivePotionEffect(Potion.jump).getAmplifier() + 1) * 0.2F : 1;
+			float jumpFactor = 1;
+			if(sp.isPotionActive(jumpBoost)) {
+				PotionEffect effect = sp.getActivePotionEffect(jumpBoost);
+				if(effect != null) {
+					jumpFactor = 1 + (effect.getAmplifier() + 1) * 0.2F;
+				}
+			}
+
 			float horizontalJumpFactor = Config.getJumpHorizontalFactor(speed, type) * jumpFactor;
 			float verticalJumpFactor = Config.getJumpVerticalFactor(speed, type) * jumpFactor;
 			float jumpChargeFactor = charged ? Config.getJumpChargeFactor(jumpCharge) : 1F;
@@ -2039,7 +2056,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 			if(up && !noVertical)
 			{
 				sp.motionY = verticalMotion;
-				sp.addStat(StatList.jumpStat, 1);
+				sp.addStat(StatList.JUMP, 1);
 				isSprintJump = isFast;
 			}
 
@@ -2158,7 +2175,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 	private void handleCrash(float fallDamageStartDistance, float fallDamageFactor)
 	{
 		if(sp.fallDistance >= 2.0F)
-			sp.addStat(StatList.distanceFallenStat, (int)Math.round(sp.fallDistance * 100D));
+			sp.addStat(StatList.FALL_ONE_CM, (int)Math.round(sp.fallDistance * 100D));
 
 		if(sp.fallDistance >= fallDamageStartDistance)
 		{
@@ -2249,9 +2266,8 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 				!blockJumpTillButtonRelease);
 		}
 
-		boolean isRiding = sp.ridingEntity != null;
 		boolean isSleeping = isp.getSleepingField();
-		boolean disabled = !Config.enabled || isRiding || isSleeping || startSleeping;
+		boolean disabled = !Config.enabled || sp.isRiding() || isSleeping || startSleeping;
 
 		Minecraft minecraft = isp.getMcField();
 		GameSettings gameSettings = minecraft.gameSettings;
@@ -2549,7 +2565,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 			isClimbSprintSpeed = net.smart.render.statistics.SmartStatisticsFactory.getInstance(sp).getTickDistance() >= minTickDistance;
 		}
 
-		boolean canAnySprint = preferSprint && !sp.isBurning() && (Config._sprintDuringItemUsage.value || !sp.isUsingItem());
+		boolean canAnySprint = preferSprint && !sp.isBurning() && (Config._sprintDuringItemUsage.value || sp.getItemInUseCount() < 1);
 		boolean canVerticallySprint = canAnySprint && !sp.isCollidedVertically;
 		boolean canHorizontallySprint = canAnySprint && collidedHorizontallyTickCount < 3;
 		boolean canAllSprint = canHorizontallySprint && canVerticallySprint;
@@ -3095,10 +3111,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 	@Override
 	public boolean isSneaking()
 	{
-		if(forceIsSneaking != null)
-			return forceIsSneaking;
-
-		return (isSlow && (sp.onGround || isp.getIsInWebField())) || (!Config._sneak.value && wouldIsSneaking && jumpCharge > 0) || ((sp.ridingEntity != null || !Config.enabled) && isp.localIsSneaking()) || (!Config._crawlOverEdge.value && isCrawling && !isClimbing);
+		return (sp.getItemInUseCount() > 0) || (isSlow && (sp.onGround || isp.getIsInWebField())) || (!Config._sneak.value && wouldIsSneaking && jumpCharge > 0) || ((sp.isRiding() || !Config.enabled) && isp.localIsSneaking()) || (!Config._crawlOverEdge.value && isCrawling && !isClimbing);
 	}
 
 	public boolean isStandupSprintingOrRunning()
@@ -3125,7 +3138,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 	{
 		isp.localWriteEntityToNBT(nBTTagCompound);
 		NBTTagCompound abilities = nBTTagCompound.getCompoundTag("abilities");
-		if(abilities != null && abilities.hasKey("flying"))
+		if(abilities.hasKey("flying"))
 			abilities.setBoolean("flying", sp.capabilities.isFlying);
 	}
 
@@ -3175,25 +3188,13 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 
 	public void setLandMovementFactor(float landMovementFactor)
 	{
-		Reflect.SetField(ModifiableAttributeInstance.class, sp.getEntityAttribute(SharedMonsterAttributes.movementSpeed), SmartMovingInstall.ModifiableAttributeInstance_attributeValue, landMovementFactor);
+		Reflect.SetField(ModifiableAttributeInstance.class, sp.getEntityAttribute(SharedMonsterAttributes.MOVEMENT_SPEED), SmartMovingInstall.ModifiableAttributeInstance_attributeValue, landMovementFactor);
 	}
 
 	public static boolean isRopeSliding()
 	{
 		return onZipLine != null && Reflect.GetField(onZipLine, null) != null;
 	}
-
-	public void beforeActivateBlockOrUseItem()
-	{
-		forceIsSneaking = isp.localIsSneaking();
-	}
-
-	public void afterActivateBlockOrUseItem()
-	{
-		forceIsSneaking = null;
-	}
-
-	private Boolean forceIsSneaking;
 
 	private static Class<?> ropesPlusClient = Reflect.LoadClass(SmartMovingInstall.class, SmartMovingInstall.RopesPlusClient, false);
 	private static Field onZipLine = ropesPlusClient != null ? Reflect.GetField(ropesPlusClient, SmartMovingInstall.RopesPlusClient_onZipLine, false) : null;

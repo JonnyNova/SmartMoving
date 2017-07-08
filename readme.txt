@@ -2,9 +2,9 @@
 Smart Moving Mod
 ================
 
-Version 16.3 for Minecraft Client 1.8.9
+Version 16.4 for Minecraft Client 1.10.2
 
-by Divisor
+by Divisor and JonnyNova
 
 
 

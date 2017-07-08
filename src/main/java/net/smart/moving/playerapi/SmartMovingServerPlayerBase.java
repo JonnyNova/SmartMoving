@@ -17,22 +17,29 @@
 
 package net.smart.moving.playerapi;
 
-import io.netty.buffer.*;
+import api.player.server.IServerPlayerAPI;
+import api.player.server.ServerPlayerAPI;
+import api.player.server.ServerPlayerBase;
+import io.netty.buffer.Unpooled;
+import net.minecraft.entity.Entity;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.SoundEvent;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
+import net.smart.moving.IEntityPlayerMP;
+import net.smart.moving.SmartMovingInfo;
+import net.smart.moving.SmartMovingInstall;
+import net.smart.moving.SmartMovingPacketStream;
+import net.smart.moving.SmartMovingServer;
+import net.smart.utilities.Reflect;
+import net.smart.utilities.SoundUtil;
 
-import java.util.*;
-
-import net.minecraftforge.fml.common.network.internal.*;
-
-import api.player.server.*;
-
-import net.smart.moving.*;
-import net.smart.utilities.*;
-import net.minecraft.entity.*;
-import net.minecraft.network.*;
-import net.minecraft.util.*;
+import java.util.List;
 
 public class SmartMovingServerPlayerBase extends ServerPlayerBase implements IEntityPlayerMP
 {
+	public final SmartMovingServer moving;
+
 	public static void registerPlayerBase()
 	{
 		ServerPlayerAPI.register(SmartMovingInfo.ModName, SmartMovingServerPlayerBase.class);
@@ -90,12 +97,6 @@ public class SmartMovingServerPlayerBase extends ServerPlayerBase implements IEn
 	public void afterOnUpdate()
 	{
 		moving.afterOnUpdate();
-	}
-
-	@Override
-	public void beforeOnLivingUpdate()
-	{
-		moving.beforeOnLivingUpdate();
 	}
 
 	@Override
@@ -167,7 +168,7 @@ public class SmartMovingServerPlayerBase extends ServerPlayerBase implements IEn
 	@Override
 	public void localAddExhaustion(float exhaustion)
 	{
-		super.addExhaustion(exhaustion);
+		player.getFoodStats().addExhaustion(exhaustion);
 	}
 
 	@Override
@@ -185,19 +186,9 @@ public class SmartMovingServerPlayerBase extends ServerPlayerBase implements IEn
 	@Override
 	public void localPlaySound(String soundId, float volume, float pitch)
 	{
-		player.playSound(soundId, volume, pitch);
-	}
-
-	@Override
-	public void beforeUpdatePotionEffects()
-	{
-		moving.afterAddMovingHungerBatch();
-	}
-
-	@Override
-	public void afterUpdatePotionEffects()
-	{
-		moving.beforeAddMovingHungerBatch();
+		SoundEvent soundEvent = SoundUtil.getSoundEvent(soundId);
+		if(soundEvent != null)
+			player.playSound(soundEvent, volume, pitch);
 	}
 
 	@Override
@@ -221,7 +212,7 @@ public class SmartMovingServerPlayerBase extends ServerPlayerBase implements IEn
 	@Override
 	public void sendPacket(byte[] data)
 	{
-		player.playerNetServerHandler.sendPacket(new FMLProxyPacket(new PacketBuffer(Unpooled.wrappedBuffer(data)), SmartMovingPacketStream.Id));
+		playerAPI.getPlayerNetServerHandlerField().sendPacket(new FMLProxyPacket(new PacketBuffer(Unpooled.wrappedBuffer(data)), SmartMovingPacketStream.Id));
 	}
 
 	@Override
@@ -240,7 +231,7 @@ public class SmartMovingServerPlayerBase extends ServerPlayerBase implements IEn
 	@Override
 	public void resetTicksForFloatKick()
 	{
-		Reflect.SetField(net.minecraft.network.NetHandlerPlayServer.class, player.playerNetServerHandler, SmartMovingInstall.NetServerHandler_ticksForFloatKick, 0);
+		Reflect.SetField(net.minecraft.network.NetHandlerPlayServer.class, playerAPI.getPlayerNetServerHandlerField(), SmartMovingInstall.NetServerHandler_ticksForFloatKick, 0);
 	}
 
 	@Override
@@ -256,14 +247,7 @@ public class SmartMovingServerPlayerBase extends ServerPlayerBase implements IEn
 	}
 
 	@Override
-	public IEntityPlayerMP[] getAllPlayers()
-	{
-		List<?> playerEntityList = player.mcServer.getConfigurationManager().playerEntityList;
-		IEntityPlayerMP[] result = new IEntityPlayerMP[playerEntityList.size()];
-		for(int i=0; i<playerEntityList.size(); i++)
-			result[i] = (IEntityPlayerMP)((IServerPlayerAPI)playerEntityList.get(i)).getServerPlayerBase(SmartMovingInfo.ModName);
-		return result;
+	public int getItemInUseCount() {
+		return player.getItemInUseCount();
 	}
-
-	public final SmartMovingServer moving;
 }

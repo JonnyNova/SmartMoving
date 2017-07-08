@@ -17,12 +17,12 @@
 
 package net.smart.moving;
 
-import java.util.*;
-
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
 
 import net.minecraft.entity.*;
-import net.minecraft.util.*;
+
+import java.util.List;
 
 public interface IEntityPlayerMP extends IPacketSender
 {
@@ -46,8 +46,6 @@ public interface IEntityPlayerMP extends IPacketSender
 
 	SmartMovingServer getMoving();
 
-	IEntityPlayerMP[] getAllPlayers();
-
 	float doGetHealth();
 
 	AxisAlignedBB getBox();
@@ -67,4 +65,6 @@ public interface IEntityPlayerMP extends IPacketSender
 	void localPlaySound(String soundId, float volume, float pitch);
 
 	boolean localIsSneaking();
+
+	int getItemInUseCount();
 }

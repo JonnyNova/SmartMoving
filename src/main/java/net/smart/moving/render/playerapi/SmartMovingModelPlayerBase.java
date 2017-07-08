@@ -17,13 +17,12 @@
 
 package net.smart.moving.render.playerapi;
 
-import net.minecraft.client.model.*;
-
-import api.player.model.*;
-
-import net.smart.moving.render.*;
+import api.player.model.ModelPlayerAPI;
+import api.player.model.ModelPlayerBase;
+import net.minecraft.client.model.ModelRenderer;
 import net.smart.moving.render.IModelPlayer;
-import net.smart.render.playerapi.*;
+import net.smart.moving.render.SmartMovingModel;
+import net.smart.render.playerapi.SmartRender;
 
 public class SmartMovingModelPlayerBase extends ModelPlayerBase implements IModelPlayer
 {

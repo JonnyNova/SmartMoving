@@ -17,18 +17,28 @@
 
 package net.smart.moving;
 
-import java.util.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockLiquid;
+import net.minecraft.block.BlockTrapDoor;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.world.World;
+import net.smart.moving.config.SmartMovingOptions;
+import net.smart.utilities.BlockWallUtil;
 
-import net.minecraft.block.*;
-import net.minecraft.block.material.*;
-import net.minecraft.block.state.*;
-import net.minecraft.client.*;
-import net.minecraft.client.entity.*;
-import net.minecraft.entity.*;
-import net.minecraft.entity.player.*;
-import net.minecraft.util.*;
-import net.minecraft.world.*;
-import net.smart.moving.config.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+
+import static net.smart.render.SmartRenderUtilities.RadiantToAngle;
 
 public abstract class SmartMovingBase extends SmartMovingContext
 {
@@ -57,6 +67,10 @@ public abstract class SmartMovingBase extends SmartMovingContext
 	public Block getBlock(int x, int y, int z)
 	{
 		return getBlock(sp.worldObj, x, y, z);
+	}
+
+	public IBlockState getState(BlockPos blockPos) {
+		return getState(sp.worldObj, blockPos);
 	}
 
 	public IBlockState getState(int x, int y, int z)
@@ -143,11 +157,9 @@ public abstract class SmartMovingBase extends SmartMovingContext
 	}
 
 	@SuppressWarnings("static-method")
-	protected boolean isLava(Block block)
+	protected boolean isLava(IBlockState state)
 	{
-		if(block == Block.getBlockFromName("lava") || block == Block.getBlockFromName("flowing_lava"))
-			return true;
-		return block != null && block.getMaterial() == Material.lava;
+		return state.getMaterial() == Material.LAVA;
 	}
 
 	protected float getLiquidBorder(int i, int j, int k)
@@ -162,9 +174,9 @@ public abstract class SmartMovingBase extends SmartMovingContext
 			return Config._lavaLikeWater.value ? getNormalWaterBorder(i, j, k) : 0F;
 
 		Material material = getMaterial(i, j, k);
-		if(material == null || material == Material.lava)
+		if(material == null || material == Material.LAVA)
 			return Config._lavaLikeWater.value ? 1F : 0F;
-		if(material == Material.water)
+		if(material == Material.WATER)
 			return getNormalWaterBorder(i, j, k);
 		if(material.isLiquid())
 			return 1F;
@@ -178,7 +190,7 @@ public abstract class SmartMovingBase extends SmartMovingContext
 		if(level >= 8)
 			return 1F;
 		if(level == 0)
-			if(getBlock(i, j + 1, k).getMaterial() == Material.air)
+			if(getBlock(i, j + 1, k).getMaterial(null) == Material.AIR)
 				return 0.8875F;
 			else
 				return 1F;
@@ -378,7 +390,10 @@ public abstract class SmartMovingBase extends SmartMovingContext
 				int j = MathHelper.floor_double(getBoundingBox().maxY);
 				int k = MathHelper.floor_double(sp.posZ);
 				if(getBlock(i, j, k) == Block.getBlockFromName("cobblestone_wall"))
-					return !((BlockWall)Block.getBlockFromName("cobblestone_wall")).canConnectTo(sp.worldObj, new BlockPos(i - orientation._i, j, k - orientation._k));
+					return BlockWallUtil.canConnectTo(
+							Block.getBlockFromName("cobblestone_wall"),
+							sp.worldObj,
+							new BlockPos(i - orientation._i, j, k - orientation._k));
 			}
 		}
 		return false;
@@ -387,8 +402,8 @@ public abstract class SmartMovingBase extends SmartMovingContext
 	private List<?> getPlayerSolidBetween(double yMin, double yMax, double horizontalTolerance)
 	{
 		AxisAlignedBB bb = getBoundingBox();
-		bb = AxisAlignedBB.fromBounds(bb.minX, yMin, bb.minZ, bb.maxX, yMax, bb.maxZ);
-		return sp.worldObj.getCollidingBoundingBoxes(sp, horizontalTolerance == 0 ? bb : bb.contract(-horizontalTolerance, 0, -horizontalTolerance));
+		bb = new AxisAlignedBB(bb.minX, yMin, bb.minZ, bb.maxX, yMax, bb.maxZ);
+		return sp.worldObj.getCollisionBoxes(sp, horizontalTolerance == 0 ? bb : bb.expand(horizontalTolerance, 0, horizontalTolerance));
 	}
 
 	protected boolean isPlayerInSolidBetween(double yMin, double yMax)
@@ -532,12 +547,15 @@ public abstract class SmartMovingBase extends SmartMovingContext
 
 	private boolean isOpenBlockSpace(BlockPos pos, boolean top)
 	{
-		return !sp.worldObj.getBlockState(pos).getBlock().isNormalCube() && (!top || !sp.worldObj.getBlockState(pos.up()).getBlock().isNormalCube());
+		IBlockState blockState = getState(pos);
+		IBlockState upBlockState = getState(pos.up());
+		return !blockState.getBlock().isNormalCube(blockState, sp.worldObj, pos) &&
+				(!top || !upBlockState.getBlock().isNormalCube(blockState, sp.worldObj, pos.up()));
 	}
 
 	public boolean isInsideOfMaterial(Material material)
 	{
-		if(SmartMovingOptions.hasFiniteLiquid && material == Material.water)
+		if(SmartMovingOptions.hasFiniteLiquid && material == Material.WATER)
 		{
 			double d = sp.posY + sp.getEyeHeight();
 			int i = MathHelper.floor_double(sp.posX);
@@ -581,7 +599,7 @@ public abstract class SmartMovingBase extends SmartMovingContext
 		if (flag)
 		{
 			double d9 = 0.05D;
-			for (; (x != 0.0D) && (worldObj.getCollidingBoundingBoxes(_this, boundingBox.offset(x, -1.0D, 0.0D)).isEmpty()); d6 = x) {
+			for (; (x != 0.0D) && (worldObj.getCollisionBoxes(_this, boundingBox.offset(x, -1.0D, 0.0D)).isEmpty()); d6 = x) {
 				if ((x < d9) && (x >= -d9)) {
 					x = 0.0D;
 				} else if (x > 0.0D) {
@@ -590,7 +608,7 @@ public abstract class SmartMovingBase extends SmartMovingContext
 					x += d9;
 				}
 			}
-			for (; (z != 0.0D) && (worldObj.getCollidingBoundingBoxes(_this, boundingBox.offset(0.0D, -1.0D, z)).isEmpty()); d8 = z) {
+			for (; (z != 0.0D) && (worldObj.getCollisionBoxes(_this, boundingBox.offset(0.0D, -1.0D, z)).isEmpty()); d8 = z) {
 				if ((z < d9) && (z >= -d9)) {
 					z = 0.0D;
 				} else if (z > 0.0D) {
@@ -599,7 +617,7 @@ public abstract class SmartMovingBase extends SmartMovingContext
 					z += d9;
 				}
 			}
-			for (; (x != 0.0D) && (z != 0.0D) && (worldObj.getCollidingBoundingBoxes(_this, boundingBox.offset(x, -1.0D, z)).isEmpty()); d8 = z)
+			for (; (x != 0.0D) && (z != 0.0D) && (worldObj.getCollisionBoxes(_this, boundingBox.offset(x, -1.0D, z)).isEmpty()); d8 = z)
 			{
 				if ((x < d9) && (x >= -d9)) {
 					x = 0.0D;
@@ -618,7 +636,7 @@ public abstract class SmartMovingBase extends SmartMovingContext
 				}
 			}
 		}
-		List list1 = worldObj.getCollidingBoundingBoxes(_this, boundingBox.addCoord(x, y, z));
+		List list1 = worldObj.getCollisionBoxes(_this, boundingBox.addCoord(x, y, z));
 		AxisAlignedBB axisalignedbb = boundingBox;
 		AxisAlignedBB axisalignedbb1;
 		for (Iterator iterator = list1.iterator(); iterator.hasNext(); y = axisalignedbb1.calculateYOffset(boundingBox, y)) {
@@ -640,10 +658,9 @@ public abstract class SmartMovingBase extends SmartMovingContext
 			double d14 = x;
 			double d10 = y;
 			double d11 = z;
-			AxisAlignedBB axisalignedbb3 = boundingBox;
 			boundingBox = axisalignedbb;
 			y = stepHeight;
-			List list = worldObj.getCollidingBoundingBoxes(_this, boundingBox.addCoord(d6, y, d8));
+			List list = worldObj.getCollisionBoxes(_this, boundingBox.addCoord(d6, y, d8));
 			AxisAlignedBB axisalignedbb4 = boundingBox;
 			AxisAlignedBB axisalignedbb5 = axisalignedbb4.addCoord(d6, 0.0D, d8);
 			double d12 = y;
@@ -702,13 +719,11 @@ public abstract class SmartMovingBase extends SmartMovingContext
 			for (Iterator iterator7 = list.iterator(); iterator7.hasNext(); y = axisalignedbb12.calculateYOffset(boundingBox, y)) {
 				axisalignedbb12 = (AxisAlignedBB)iterator7.next();
 			}
-			boundingBox = boundingBox.offset(0.0D, y, 0.0D);
 			if (d14 * d14 + d11 * d11 >= x * x + z * z)
 			{
 				x = d14;
 				y = d10;
 				z = d11;
-				boundingBox = axisalignedbb3;
 			}
 		}
 
@@ -754,9 +769,7 @@ public abstract class SmartMovingBase extends SmartMovingContext
 		float f = MathHelper.sqrt_double(d * d + d1 * d1);
 		if(f < 0.05F && f > 0.02 && isSmall)
 		{
-			float f1 = sp.renderYawOffset;
-
-			f1 = ((float)Math.atan2(d1, d) * 180F) / 3.141593F - 90F;
+			float f1 = ((float)Math.atan2(d1, d) * 180F) / 3.141593F - 90F;
 
 			if(sp.swingProgress > 0.0F)
 			{
@@ -832,8 +845,8 @@ public abstract class SmartMovingBase extends SmartMovingContext
 	public void reverseHandleMaterialAcceleration()
 	{
 		World _this = sp.worldObj;
-		AxisAlignedBB axisalignedbb = getBoundingBox().expand(0.0D, -0.40000000596046448D, 0.0D).contract(0.001D, 0.001D, 0.001D);
-		Material material = Material.water;
+		AxisAlignedBB axisalignedbb = getBoundingBox().expand(0.0D, -0.40000000596046448D, 0.0D).contract(0.001D);
+		Material material = Material.WATER;
 		Entity entity = sp;
 
 		int i = MathHelper.floor_double(axisalignedbb.minX);
@@ -845,7 +858,7 @@ public abstract class SmartMovingBase extends SmartMovingContext
 		if (!_this.isAreaLoaded(new BlockPos(i, k, i1), new BlockPos(j, l, j1), true))
 			return;
 
-		Vec3 vec3 = new Vec3(0.0D, 0.0D, 0.0D);
+		Vec3d vec3 = new Vec3d(0.0D, 0.0D, 0.0D);
 		for (int k1 = i; k1 < j; k1++)
 			for (int l1 = k; l1 < l; l1++)
 				for (int i2 = i1; i2 < j1; i2++)
@@ -853,7 +866,7 @@ public abstract class SmartMovingBase extends SmartMovingContext
 					BlockPos blockpos = new BlockPos(k1, l1, i2);
 					IBlockState iblockstate = _this.getBlockState(blockpos);
 					Block block = iblockstate.getBlock();
-					if (block.getMaterial() == material)
+					if (iblockstate.getMaterial() == material)
 					{
 						double d0 = l1 + 1 - BlockLiquid.getLiquidHeightPercent(iblockstate.getValue(BlockLiquid.LEVEL).intValue());
 						if (l >= d0)

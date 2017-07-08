@@ -17,9 +17,7 @@
 
 package net.smart.moving.render;
 
-import net.smart.moving.*;
-
-public abstract class SmartRenderContext extends SmartMovingContext
+public abstract class SmartRenderContext
 {
 	public static final int Scale = 0;
 	public static final int NoScaleStart = 1;

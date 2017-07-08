@@ -17,11 +17,19 @@
 
 package net.smart.moving;
 
-import net.minecraft.block.*;
-import net.minecraft.client.*;
-import net.minecraft.client.particle.*;
-import net.minecraft.entity.player.*;
-import net.minecraft.util.*;
+
+import net.minecraft.block.Block;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.particle.Particle;
+import net.minecraft.client.particle.ParticleSplash;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.util.EnumParticleTypes;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+
+import static net.smart.render.SmartRenderUtilities.Half;
+import static net.smart.render.SmartRenderUtilities.Quarter;
+import static net.smart.render.SmartRenderUtilities.RadiantToAngle;
 
 public abstract class SmartMoving extends SmartMovingBase
 {
@@ -110,13 +118,11 @@ public abstract class SmartMoving extends SmartMovingBase
 		if(isSwimming)
 		{
 			float posY = MathHelper.floor_double(sp.getEntityBoundingBox().minY) + 1.0F;
-			int i = (int)Math.floor(sp.posX);
-			int j = (int)Math.floor(posY - 0.5);
-			int k = (int)Math.floor(sp.posZ);
+			int x = (int)Math.floor(sp.posX);
+			int y = (int)Math.floor(posY - 0.5);
+			int z = (int)Math.floor(sp.posZ);
 
-			Block block = getBlock(sp.worldObj, i, j, k);
-
-			boolean isLava = block != null && isLava(block);
+			boolean isLava = isLava(sp.worldObj.getBlockState(new BlockPos(x, y, z)));
 			spawnSwimmingParticle += horizontalSpeedSquare;
 
 			float maxSpawnSwimmingParticle = (isLava ? Config._lavaSwimParticlePeriodFactor.value : Config._swimParticlePeriodFactor.value) * 0.01F;
@@ -124,10 +130,9 @@ public abstract class SmartMoving extends SmartMovingBase
 			{
 				double posX = sp.posX + getSpawnOffset();
 				double posZ = sp.posZ + getSpawnOffset();
-				EntityFX splash = isLava ? new EntityLavaFX.Factory().getEntityFX(EnumParticleTypes.LAVA.getParticleID(), sp.worldObj, posX, posY, posZ, 0, 0, 0) : new EntitySplashFX.Factory().getEntityFX(EnumParticleTypes.WATER_SPLASH.getParticleID(), sp.worldObj, posX, posY, posZ, 0, 0, 0);
-				splash.motionX = 0;
-				splash.motionY = 0.2;
-				splash.motionZ = 0;
+				Particle splash = isLava ?
+						new ParticleSplash.Factory().getEntityFX(EnumParticleTypes.LAVA.getParticleID(), sp.worldObj, posX, posY, posZ, 0, 0.2, 0) :
+						new ParticleSplash.Factory().getEntityFX(EnumParticleTypes.WATER_SPLASH.getParticleID(), sp.worldObj, posX, posY, posZ, 0, 0.2, 0);
 				minecraft.effectRenderer.addEffect(splash);
 
 				spawnSwimmingParticle -= maxSpawnSwimmingParticle;

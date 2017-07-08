@@ -162,7 +162,7 @@ public class SmartMovingRender extends SmartRenderContext
 	public void renderName(AbstractClientPlayer entityPlayer, double d, double d1, double d2)
 	{
 		boolean changedIsSneaking = false, originalIsSneaking = false;
-		if(Minecraft.isGuiEnabled() && entityPlayer != irp.getMovingRenderManager().livingPlayer)
+		if(Minecraft.isGuiEnabled() && entityPlayer != irp.getMovingRenderManager().pointedEntity)
 		{
 			SmartMoving moving = SmartMovingFactory.getInstance(entityPlayer);
 			if(moving != null)
@@ -170,9 +170,9 @@ public class SmartMovingRender extends SmartRenderContext
 				originalIsSneaking = entityPlayer.isSneaking();
 				boolean temporaryIsSneaking = originalIsSneaking;
 				if(moving.isCrawling && !moving.isClimbing)
-					temporaryIsSneaking = !Config._crawlNameTag.value;
+					temporaryIsSneaking = !SmartMovingContext.Config._crawlNameTag.value;
 				else if(originalIsSneaking)
-					temporaryIsSneaking = !Config._sneakNameTag.value;
+					temporaryIsSneaking = !SmartMovingContext.Config._sneakNameTag.value;
 
 				changedIsSneaking = temporaryIsSneaking != originalIsSneaking;
 				if(changedIsSneaking)
@@ -193,14 +193,14 @@ public class SmartMovingRender extends SmartRenderContext
 
 	public static void renderGuiIngame(Minecraft minecraft)
 	{
-		if (!Client.getNativeUserInterfaceDrawing())
+		if (!SmartMovingContext.Client.getNativeUserInterfaceDrawing())
 			return;
 
 		if(!GL11.glGetBoolean(GL11.GL_ALPHA_TEST))
 			return;
 
 		SmartMovingSelf moving = (SmartMovingSelf)SmartMovingFactory.getInstance(minecraft.thePlayer);
-		if(moving != null && Config.enabled && (Options._displayExhaustionBar.value || Options._displayJumpChargeBar.value))
+		if(moving != null && SmartMovingContext.Config.enabled && (SmartMovingContext.Options._displayExhaustionBar.value || SmartMovingContext.Options._displayJumpChargeBar.value))
 		{
 			ScaledResolution scaledresolution = new ScaledResolution(minecraft);
 			int width = scaledresolution.getScaledWidth();
@@ -208,14 +208,14 @@ public class SmartMovingRender extends SmartRenderContext
 
 			if(minecraft.playerController.shouldDrawHUD())
 			{
-				float maxExhaustion = Client.getMaximumExhaustion();
+				float maxExhaustion = SmartMovingContext.Client.getMaximumExhaustion();
 				float exhaustion = Math.min(moving.exhaustion, maxExhaustion);
 				boolean drawExhaustion = exhaustion > 0 && exhaustion <= maxExhaustion;
 
-				float maxStillJumpCharge = Config._jumpChargeMaximum.value;
+				float maxStillJumpCharge = SmartMovingContext.Config._jumpChargeMaximum.value;
 				float stillJumpCharge = Math.min(moving.jumpCharge, maxStillJumpCharge);
 
-				float maxRunJumpCharge = Config._headJumpChargeMaximum.value;
+				float maxRunJumpCharge = SmartMovingContext.Config._headJumpChargeMaximum.value;
 				float runJumpCharge = Math.min(moving.headJumpCharge, maxRunJumpCharge);
 
 				boolean drawJumpCharge = stillJumpCharge > 0 || runJumpCharge > 0;
@@ -256,7 +256,7 @@ public class SmartMovingRender extends SmartRenderContext
 					int minFitnessToStartActionHalfs = (int)Math.floor(minFitnessToStartAction / maxExhaustion * 21F);
 					int minFitnessToStartActionFulls = minFitnessToStartActionHalfs / 2;
 
-					_jOffset = height - 39 - 10 - (minecraft.thePlayer.isInsideOfMaterial(Material.water) ? 10 : 0);
+					_jOffset = height - 39 - 10 - (minecraft.thePlayer.isInsideOfMaterial(Material.WATER) ? 10 : 0);
 					for(int i = 0; i < Math.min(fulls + half, 10); i++)
 					{
 						_iOffset = (width / 2 + 90) - (i + 1) * 8;

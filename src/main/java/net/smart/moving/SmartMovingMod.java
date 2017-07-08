@@ -31,14 +31,17 @@ import net.minecraftforge.fml.common.network.*;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent.*;
 import net.minecraft.entity.player.*;
 import net.minecraft.network.*;
-import net.smart.core.*;
 import net.smart.moving.config.*;
 import net.smart.moving.render.*;
 import net.smart.utilities.*;
 
-@Mod(modid = "SmartMoving", name = "Smart Moving", version = "16.3", dependencies = "required-after:PlayerAPI@[1.0,)")
+@Mod(modid = SmartMovingMod.ID, name = SmartMovingMod.NAME, version = SmartMovingMod.VERSION, useMetadata = true)
 public class SmartMovingMod
 {
+	final static String ID = "smartmoving";
+	final static String NAME = "Smart Moving";
+	final static String VERSION = "@VERSION@";
+
 	protected static String ModComVersion = "2.4";
 
 	private final boolean isClient;
@@ -94,8 +97,6 @@ public class SmartMovingMod
 		}
 		else
 			SmartMovingServer.initialize(new File("."), FMLCommonHandler.instance().getMinecraftServerInstance().getGameType().getID(), new SmartMovingConfig());
-
-		SmartCoreEventHandler.Add(new SmartMovingCoreEventHandler());
 	}
 
 	@EventHandler
@@ -114,17 +115,17 @@ public class SmartMovingMod
 	}
 
 	@SubscribeEvent
-	@SuppressWarnings("static-method")
+	@SuppressWarnings({ "static-method", "unused" })
 	public void onPacketData(ServerCustomPacketEvent event)
 	{
-		SmartMovingPacketStream.receivePacket(event.packet, SmartMovingServerComm.instance, net.smart.moving.playerapi.SmartMovingServerPlayerBase.getPlayerBase(((NetHandlerPlayServer)event.handler).playerEntity));
+		SmartMovingPacketStream.receivePacket(event.getPacket(), SmartMovingServerComm.instance, net.smart.moving.playerapi.SmartMovingServerPlayerBase.getPlayerBase(((NetHandlerPlayServer)event.getHandler()).playerEntity));
 	}
 
 	@SubscribeEvent
-	@SuppressWarnings("static-method")
+	@SuppressWarnings({ "static-method", "unused" })
 	public void onPacketData(ClientCustomPacketEvent event)
 	{
-		SmartMovingPacketStream.receivePacket(event.packet, SmartMovingComm.instance, null);
+		SmartMovingPacketStream.receivePacket(event.getPacket(), SmartMovingComm.instance, null);
 	}
 
 	public void registerGameTicks()

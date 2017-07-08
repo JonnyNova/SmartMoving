@@ -17,18 +17,18 @@
 
 package net.smart.moving.render.playerapi;
 
-import java.lang.reflect.*;
-
-import net.minecraft.client.entity.*;
-import net.minecraft.client.renderer.entity.*;
-import net.minecraft.client.renderer.entity.layers.*;
-
-import api.player.render.*;
-
-import net.smart.moving.render.*;
+import api.player.render.RenderPlayerAPI;
+import api.player.render.RenderPlayerBase;
+import net.minecraft.client.entity.AbstractClientPlayer;
+import net.minecraft.client.renderer.entity.RenderManager;
+import net.minecraft.client.renderer.entity.layers.LayerArmorBase;
+import net.smart.moving.render.IModelPlayer;
 import net.smart.moving.render.IRenderPlayer;
+import net.smart.moving.render.SmartMovingRender;
 import net.smart.render.SmartRenderInstall;
-import net.smart.utilities.*;
+import net.smart.utilities.Reflect;
+
+import java.lang.reflect.Field;
 
 public class SmartMovingRenderPlayerBase extends RenderPlayerBase implements IRenderPlayer
 {

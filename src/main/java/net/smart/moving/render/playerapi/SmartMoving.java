@@ -17,11 +17,14 @@
 
 package net.smart.moving.render.playerapi;
 
-import api.player.model.*;
-import api.player.render.*;
-
-import net.smart.moving.*;
-import net.smart.render.playerapi.*;
+import api.player.model.IModelPlayerAPI;
+import api.player.model.ModelPlayerAPI;
+import api.player.model.ModelPlayerBaseSorting;
+import api.player.render.IRenderPlayerAPI;
+import api.player.render.RenderPlayerAPI;
+import api.player.render.RenderPlayerBaseSorting;
+import net.smart.moving.SmartMovingInfo;
+import net.smart.render.playerapi.SmartRender;
 
 public abstract class SmartMoving
 {

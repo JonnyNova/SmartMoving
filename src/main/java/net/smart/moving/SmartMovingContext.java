@@ -17,19 +17,27 @@
 
 package net.smart.moving;
 
-import net.minecraftforge.fml.client.registry.*;
-import net.minecraftforge.fml.common.*;
-import net.minecraft.block.*;
-import net.minecraft.block.material.*;
-import net.minecraft.block.properties.*;
-import net.minecraft.block.state.*;
-import net.minecraft.client.*;
-import net.minecraft.server.*;
-import net.minecraft.util.*;
-import net.minecraft.world.*;
-import net.minecraft.world.WorldSettings.*;
-import net.smart.moving.config.*;
-import net.smart.render.*;
+
+import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.properties.PropertyDirection;
+import net.minecraft.block.properties.PropertyEnum;
+import net.minecraft.block.properties.PropertyInteger;
+import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.GameType;
+import net.minecraft.world.World;
+import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.FMLLog;
+import net.smart.moving.config.SmartMovingClientConfig;
+import net.smart.moving.config.SmartMovingOptions;
+import net.smart.moving.config.SmartMovingServerConfig;
+import net.smart.moving.render.SmartRenderContext;
 
 public abstract class SmartMovingContext extends SmartRenderContext
 {
@@ -97,7 +105,7 @@ public abstract class SmartMovingContext extends SmartRenderContext
 
 	public static void initializeServerIfNecessary()
 	{
-		MinecraftServer currentMinecraftServer = MinecraftServer.getServer();
+		MinecraftServer currentMinecraftServer = FMLCommonHandler.instance().getMinecraftServerInstance();
 		if(currentMinecraftServer != null && currentMinecraftServer != lastMinecraftServer)
 		{
 			GameType gameType;
@@ -119,17 +127,19 @@ public abstract class SmartMovingContext extends SmartRenderContext
 		return getState(world, x, y, z).getBlock();
 	}
 
+	public static IBlockState getState(World world, BlockPos blockPos)
+	{
+		return world.getBlockState(blockPos);
+	}
+
 	public static IBlockState getState(World world, int x, int y, int z)
 	{
-		BlockPos position = new BlockPos(x, y, z);
-		IBlockState state = world.getBlockState(position);
-		Block block = state.getBlock();
-		return block.getActualState(state, world, position);
+		return world.getBlockState(new BlockPos(x, y, z));
 	}
 
 	public static Material getMaterial(World world, int x, int y, int z)
 	{
-		return getBlock(world, x, y, z).getMaterial();
+		return getState(world, x,y ,z).getMaterial();
 	}
 
 	public static boolean getValue(IBlockState state, PropertyBool property)

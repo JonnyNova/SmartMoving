@@ -17,16 +17,19 @@
 
 package net.smart.moving;
 
-import io.netty.buffer.*;
-import net.minecraftforge.fml.common.network.internal.*;
-import net.minecraft.client.*;
-import net.minecraft.client.entity.*;
-import net.minecraft.entity.*;
-import net.minecraft.network.*;
-import net.minecraft.network.play.client.*;
-import net.minecraft.server.*;
-import net.smart.moving.config.*;
-import net.smart.properties.*;
+import io.netty.buffer.Unpooled;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityOtherPlayerMP;
+import net.minecraft.client.network.NetHandlerPlayClient;
+import net.minecraft.entity.Entity;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.network.play.client.CPacketCustomPayload;
+import net.minecraft.server.integrated.IntegratedServer;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
+import net.smart.moving.config.SmartMovingConfig;
+import net.smart.moving.config.SmartMovingOptions;
+import net.smart.properties.Property;
 
 public class SmartMovingComm extends SmartMovingContext implements IPacketReceiver, IPacketSender
 {
@@ -79,7 +82,8 @@ public class SmartMovingComm extends SmartMovingContext implements IPacketReceiv
 	@Override
 	public boolean processHungerChangePacket(FMLProxyPacket packet, IEntityPlayerMP player, float hunger)
 	{
-		return false;
+		player.localAddExhaustion(hunger);
+		return true;
 	}
 
 	@Override
@@ -90,7 +94,9 @@ public class SmartMovingComm extends SmartMovingContext implements IPacketReceiv
 
 	private static boolean isConnectedToRemoteServer()
 	{
-		return MinecraftServer.getServer() == null || Minecraft.getMinecraft().getIntegratedServer() == null || !Minecraft.getMinecraft().getIntegratedServer().isSinglePlayer();
+		IntegratedServer integratedServer = Minecraft.getMinecraft().getIntegratedServer();
+		return FMLCommonHandler.instance().getMinecraftServerInstance() == null
+				|| (integratedServer == null || !integratedServer.isSinglePlayer());
 	}
 
 	public static void processConfigPacket(String[] content, String username, boolean blockCode)
@@ -142,27 +148,30 @@ public class SmartMovingComm extends SmartMovingContext implements IPacketReceiv
 	@Override
 	public void sendPacket(byte[] data)
 	{
-		Minecraft.getMinecraft().getNetHandler().addToSendQueue(new C17PacketCustomPayload(SmartMovingPacketStream.Id, new PacketBuffer(Unpooled.wrappedBuffer(data))));
+		NetHandlerPlayClient connection = Minecraft.getMinecraft().getConnection();
+		if(connection != null)
+			connection.getNetworkManager().sendPacket(
+					new CPacketCustomPayload(SmartMovingPacketStream.Id, new PacketBuffer(Unpooled.wrappedBuffer(data))));
 	}
 
 	public static boolean processBlockCode(String text)
 	{
-		if(!text.startsWith("§0§1") || !text.endsWith("§f§f"))
+		if(!text.startsWith("ï¿½0ï¿½1") || !text.endsWith("ï¿½fï¿½f"))
 			return false;
 
 		String codes = text.substring(4, text.length() - 4);
-		processBlockCode(codes, "§0", Options._baseClimb, "standard");
-		processBlockCode(codes, "§1", Options._freeClimb);
-		processBlockCode(codes, "§2", Options._ceilingClimbing);
-		processBlockCode(codes, "§3", Options._swim);
-		processBlockCode(codes, "§4", Options._dive);
-		processBlockCode(codes, "§5", Options._crawl);
-		processBlockCode(codes, "§6", Options._slide);
-		processBlockCode(codes, "§7", Options._fly);
-		processBlockCode(codes, "§8", Options._jumpCharge);
-		processBlockCode(codes, "§9", Options._headJump);
-		processBlockCode(codes, "§a", Options._angleJumpSide);
-		processBlockCode(codes, "§b", Options._angleJumpBack);
+		processBlockCode(codes, "ï¿½0", Options._baseClimb, "standard");
+		processBlockCode(codes, "ï¿½1", Options._freeClimb);
+		processBlockCode(codes, "ï¿½2", Options._ceilingClimbing);
+		processBlockCode(codes, "ï¿½3", Options._swim);
+		processBlockCode(codes, "ï¿½4", Options._dive);
+		processBlockCode(codes, "ï¿½5", Options._crawl);
+		processBlockCode(codes, "ï¿½6", Options._slide);
+		processBlockCode(codes, "ï¿½7", Options._fly);
+		processBlockCode(codes, "ï¿½8", Options._jumpCharge);
+		processBlockCode(codes, "ï¿½9", Options._headJump);
+		processBlockCode(codes, "ï¿½a", Options._angleJumpSide);
+		processBlockCode(codes, "ï¿½b", Options._angleJumpBack);
 		return true;
 	}
 

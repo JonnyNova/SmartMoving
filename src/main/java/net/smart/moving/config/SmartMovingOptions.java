@@ -17,20 +17,21 @@
 
 package net.smart.moving.config;
 
-import java.io.*;
-import java.lang.reflect.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiNewChat;
+import net.minecraft.client.multiplayer.PlayerControllerMP;
+import net.minecraft.client.resources.I18n;
+import net.minecraft.client.settings.KeyBinding;
+import net.minecraft.util.text.TextComponentString;
+import net.minecraft.world.GameType;
+import net.smart.moving.SmartMovingContext;
+import net.smart.moving.SmartMovingInfo;
+import net.smart.moving.SmartMovingInstall;
+import net.smart.properties.Property;
+import net.smart.utilities.Reflect;
 
-import net.minecraft.client.*;
-import net.minecraft.client.gui.*;
-import net.minecraft.client.multiplayer.*;
-import net.minecraft.client.resources.*;
-import net.minecraft.client.settings.*;
-import net.minecraft.util.*;
-import net.minecraft.world.WorldSettings.*;
-
-import net.smart.moving.*;
-import net.smart.properties.*;
-import net.smart.utilities.*;
+import java.io.File;
+import java.lang.reflect.Field;
 
 public class SmartMovingOptions extends SmartMovingClientConfig
 {
@@ -307,7 +308,7 @@ public class SmartMovingOptions extends SmartMovingClientConfig
 			for(int i=0; i<5; i++)
 				guiChat.deleteChatLine(id);
 
-		guiChat.printChatMessageWithOptionalDeletion(new ChatComponentText(message), id);
+		guiChat.printChatMessageWithOptionalDeletion(new TextComponentString(message), id);
 	}
 
 	public static void initialize(boolean redPowerWiring, boolean buildCraftTransportation, boolean finiteLiquid, boolean betterThanWolves, boolean singlePlayerCommands, boolean ropesPlus, boolean aSGrapplingHook, boolean betterMisc)
@@ -333,7 +334,7 @@ public class SmartMovingOptions extends SmartMovingClientConfig
 		if(controller == null)
 			return;
 
-		int currentGameType = ((GameType)Reflect.GetField(_currentGameType, controller)).getID();
+		int currentGameType = ((GameType) Reflect.GetField(_currentGameType, controller)).getID();
 		if(currentGameType == gameType)
 			return;
 

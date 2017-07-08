@@ -17,10 +17,20 @@
 
 package net.smart.moving.render;
 
-import net.minecraft.block.*;
-import net.minecraft.util.*;
-import net.smart.moving.*;
-import net.smart.render.*;
+import net.minecraft.block.Block;
+import net.minecraft.util.math.MathHelper;
+import net.smart.moving.FeetClimbing;
+import net.smart.moving.HandsClimbing;
+import net.smart.render.ModelRotationRenderer;
+
+import static net.smart.render.SmartRenderUtilities.Eighth;
+import static net.smart.render.SmartRenderUtilities.Half;
+import static net.smart.render.SmartRenderUtilities.Quarter;
+import static net.smart.render.SmartRenderUtilities.RadiantToAngle;
+import static net.smart.render.SmartRenderUtilities.Sixteenth;
+import static net.smart.render.SmartRenderUtilities.Sixtyfourth;
+import static net.smart.render.SmartRenderUtilities.Thirtytwoth;
+import static net.smart.render.SmartRenderUtilities.Whole;
 
 public class SmartMovingModel extends SmartRenderContext
 {
@@ -517,7 +527,7 @@ public class SmartMovingModel extends SmartRenderContext
 			bipedLeftLeg.rotateAngleX = bendFactor * -Eighth;
 
 			float armFactorZ = Factor(currentVerticalAngle, Quarter, -Quarter);
-			if(overGroundBlock != null && overGroundBlock.getMaterial().isSolid())
+			if(overGroundBlock != null && overGroundBlock.getBlockState().getBaseState().getMaterial().isSolid())
 				armFactorZ = Math.min(armFactorZ, smallOverGroundHeight / 5F);
 
 			bipedRightArm.rotateAngleZ = Half - Sixteenth + armFactorZ * Eighth;

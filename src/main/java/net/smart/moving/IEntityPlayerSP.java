@@ -17,10 +17,10 @@
 
 package net.smart.moving;
 
-import net.minecraft.block.material.*;
-import net.minecraft.client.*;
-import net.minecraft.entity.player.EntityPlayer.*;
-import net.minecraft.nbt.*;
+import net.minecraft.block.material.Material;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.nbt.NBTTagCompound;
 
 public interface IEntityPlayerSP
 {
@@ -44,7 +44,7 @@ public interface IEntityPlayerSP
 
 	void localMoveEntity(double d, double d1, double d2);
 
-	EnumStatus localSleepInBedAt(int i, int j, int k);
+	EntityPlayer.SleepResult localSleepInBedAt(int i, int j, int k);
 
 	float localGetBrightness(float f);
 

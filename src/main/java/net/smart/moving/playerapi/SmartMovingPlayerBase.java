@@ -17,14 +17,15 @@
 
 package net.smart.moving.playerapi;
 
-import api.player.client.*;
-
+import api.player.client.ClientPlayerAPI;
+import api.player.client.ClientPlayerBase;
+import api.player.client.IClientPlayerAPI;
 import net.minecraft.block.material.*;
 import net.minecraft.client.*;
 import net.minecraft.client.entity.*;
-import net.minecraft.entity.player.EntityPlayer.*;
+import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.nbt.*;
-import net.minecraft.util.*;
+import net.minecraft.util.math.BlockPos;
 import net.smart.moving.*;
 
 public class SmartMovingPlayerBase extends ClientPlayerBase implements IEntityPlayerSP
@@ -70,7 +71,7 @@ public class SmartMovingPlayerBase extends ClientPlayerBase implements IEntityPl
 	}
 
 	@Override
-	public EnumStatus localSleepInBedAt(int i, int j, int k)
+	public EntityPlayer.SleepResult localSleepInBedAt(int i, int j, int k)
 	{
 		return super.trySleep(new BlockPos(i, j, k));
 	}

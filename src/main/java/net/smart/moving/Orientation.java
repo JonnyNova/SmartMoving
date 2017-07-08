@@ -17,21 +17,40 @@
 
 package net.smart.moving;
 
-import java.lang.reflect.*;
-import java.util.*;
-
-import net.minecraft.block.*;
-import net.minecraft.block.BlockStairs.EnumShape;
-import net.minecraft.block.material.*;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockDirectional;
+import net.minecraft.block.BlockDoor;
+import net.minecraft.block.BlockFence;
+import net.minecraft.block.BlockFenceGate;
+import net.minecraft.block.BlockLadder;
+import net.minecraft.block.BlockPane;
+import net.minecraft.block.BlockPressurePlate;
+import net.minecraft.block.BlockSlab;
+import net.minecraft.block.BlockStairs;
+import net.minecraft.block.BlockTrapDoor;
+import net.minecraft.block.BlockVine;
+import net.minecraft.block.BlockWall;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.*;
-import net.minecraft.entity.*;
-import net.minecraft.entity.player.*;
-import net.minecraft.tileentity.*;
-import net.minecraft.util.*;
-import net.minecraft.world.*;
-import net.smart.moving.config.*;
-import net.smart.utilities.*;
+import net.minecraft.client.Minecraft;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.World;
+import net.smart.moving.config.SmartMovingOptions;
+import net.smart.utilities.BlockWallUtil;
+import net.smart.utilities.Name;
+import net.smart.utilities.Reflect;
+
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class Orientation extends SmartMovingContext
 {
@@ -240,7 +259,7 @@ public class Orientation extends SmartMovingContext
 		IBlockState state = getState(world, i + _i, j + 1, k + _k);
 		if(isFullEmpty(state))
 		{
-			Material aboveMaterial = getBlock(world, i + _i, j + 2, k + _k).getMaterial();
+			Material aboveMaterial = world.getBlockState(new BlockPos(i + _i, j + 2, k + _k)).getMaterial();
 			if(aboveMaterial != null && isSolid(aboveMaterial))
 				return true;
 		}
@@ -1079,10 +1098,11 @@ public class Orientation extends SmartMovingContext
 		return isLadder(state) || isBlockOfType(state, _ladderKitLadderTypes);
 	}
 
-	public static boolean isClimbable(World world, int i, int j, int k)
+	public static boolean isClimbable(World world, int x, int y, int z)
 	{
-		Block block = getBlock(world, i, j, k);
-		return block != null && block.isLadder(world, new BlockPos(i, j, k), Minecraft.getMinecraft().thePlayer);
+		BlockPos position = new BlockPos(x, y, z);
+		IBlockState blockState = world.getBlockState(position);
+		return blockState.getBlock().isLadder(blockState, world, position, Minecraft.getMinecraft().thePlayer);
 	}
 
 	private boolean isOnLadderFront(int j_offset)
@@ -1133,7 +1153,7 @@ public class Orientation extends SmartMovingContext
 			IBlockState state = getState(world, i, j_offset, k);
 			TileEntity entity = state.getBlock().createTileEntity(world, state);
 			if (entity != null)
-				return (Integer)Reflect.Invoke(_carpentersBlockPropertiesGetData, null, entity);
+				return (Integer) Reflect.Invoke(_carpentersBlockPropertiesGetData, null, entity);
 		}
 		return -1;
 	}
@@ -1168,7 +1188,7 @@ public class Orientation extends SmartMovingContext
 
 	public boolean isRemoteSolid(World world, int i, int j, int k)
 	{
-		return isSolid(getBlock(world, i + _i, j, k + _k).getMaterial());
+		return isSolid(world.getBlockState(new BlockPos(i + _i, j, k + _k)).getMaterial());
 	}
 
 	public static Orientation getOpenTrapDoorOrientation(World world, int i, int j, int k)
@@ -1383,29 +1403,29 @@ public class Orientation extends SmartMovingContext
 		return false;
 	}
 
-	private static boolean outer_left(EnumShape shape)
+	private static boolean outer_left(BlockStairs.EnumShape shape)
 	{
-		return shape == EnumShape.OUTER_LEFT;
+		return shape == BlockStairs.EnumShape.OUTER_LEFT;
 	}
 
-	private static boolean inner_left(EnumShape shape)
+	private static boolean inner_left(BlockStairs.EnumShape shape)
 	{
-		return shape == EnumShape.INNER_LEFT;
+		return shape == BlockStairs.EnumShape.INNER_LEFT;
 	}
 
-	private static boolean straight(EnumShape shape)
+	private static boolean straight(BlockStairs.EnumShape shape)
 	{
-		return shape == EnumShape.STRAIGHT;
+		return shape == BlockStairs.EnumShape.STRAIGHT;
 	}
 
-	private static boolean inner_right(EnumShape shape)
+	private static boolean inner_right(BlockStairs.EnumShape shape)
 	{
-		return shape == EnumShape.INNER_RIGHT;
+		return shape == BlockStairs.EnumShape.INNER_RIGHT;
 	}
 
-	private static boolean outer_right(EnumShape shape)
+	private static boolean outer_right(BlockStairs.EnumShape shape)
 	{
-		return shape == EnumShape.OUTER_RIGHT;
+		return shape == BlockStairs.EnumShape.OUTER_RIGHT;
 	}
 
 	private static boolean west(EnumFacing facing)
@@ -1725,7 +1745,7 @@ public class Orientation extends SmartMovingContext
 			if(block instanceof BlockFence)
 				return ((BlockFence)block).canConnectTo(world, new BlockPos(i + direction._i, local_offset + j_offset, k + direction._k));
 			if(block instanceof BlockWall)
-				return ((BlockWall)block).canConnectTo(world, new BlockPos(i + direction._i, local_offset + j_offset, k + direction._k));
+				return BlockWallUtil.canConnectTo(block, world, new BlockPos(i + direction._i, local_offset + j_offset, k + direction._k));
 			else if(SmartMovingOptions.hasBetterMisc && _canConnectFenceTo != null)
 				return (Boolean)Reflect.Invoke(_canConnectFenceTo, block, world, i + direction._i, local_offset + j_offset, k + direction._k);
 		}
@@ -1805,7 +1825,7 @@ public class Orientation extends SmartMovingContext
 
 	private static boolean isHalfBlock(IBlockState state)
 	{
-		return isBlock(state, BlockSlab.class, _knownHalfBlocks) && !((BlockSlab)state.getBlock()).isOpaqueCube();
+		return isBlock(state, BlockSlab.class, _knownHalfBlocks) && !((BlockSlab)state.getBlock()).isOpaqueCube(state);
 	}
 
 	private static boolean isStairCompact(IBlockState state)
@@ -1886,7 +1906,7 @@ public class Orientation extends SmartMovingContext
 		if(state == null)
 			return false;
 
-		boolean solid = isSolid(state.getBlock().getMaterial());
+		boolean solid = isSolid(state.getMaterial());
 		if(solid && state == Block.getBlockFromName("standing_sign"))
 			solid = false;
 		if(solid && state == Block.getBlockFromName("wall_sign"))
@@ -1908,7 +1928,7 @@ public class Orientation extends SmartMovingContext
 			return true;
 
 		Block block = state.getBlock();
-		boolean empty = !isSolid(block.getMaterial());
+		boolean empty = !isSolid(state.getMaterial());
 		if(!empty && block == Block.getBlockFromName("standing_sign"))
 			empty = true;
 		if(!empty && block == Block.getBlockFromName("wall_sign"))

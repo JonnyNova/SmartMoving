@@ -17,15 +17,19 @@
 
 package net.smart.moving;
 
-import java.io.*;
-import java.util.*;
 
-import net.minecraftforge.fml.common.*;
-import net.minecraftforge.fml.common.network.internal.*;
-import net.minecraft.entity.*;
-import net.minecraft.util.*;
-import net.smart.moving.config.*;
-import net.smart.properties.*;
+import api.player.server.IServerPlayerAPI;
+import net.minecraft.entity.Entity;
+import net.minecraft.util.math.AxisAlignedBB;
+import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.FMLLog;
+import net.minecraftforge.fml.common.network.internal.FMLProxyPacket;
+import net.smart.moving.config.SmartMovingConfig;
+import net.smart.moving.config.SmartMovingServerOptions;
+import net.smart.properties.Property;
+
+import java.io.File;
+import java.util.List;
 
 public class SmartMovingServer
 {
@@ -35,18 +39,13 @@ public class SmartMovingServer
 	private boolean resetFallDistance = false;
 	private boolean resetTicksForFloatKick = false;
 	private boolean initialized = false;
-	private boolean withinOnLivingUpdate = false;
 
 	public boolean crawlingInitialized;
 	public int crawlingCooldown;
 	public boolean isCrawling;
 	public boolean isSmall;
-	public float hunger;
 
-	private int disableAddExhaustionDepth;
-	private boolean disableAddExhaustion;
 	private boolean isSneakButtonPressed;
-	private Boolean forceIsSneaking;
 
 	public SmartMovingServer(IEntityPlayerMP mp, boolean onTheFly)
 	{
@@ -156,7 +155,7 @@ public class SmartMovingServer
 
 	public void processHungerChangePacket(float hunger)
 	{
-		this.hunger = hunger;
+		mp.localAddExhaustion(hunger);
 	}
 
 	public void processSoundPacket(String soundId, float volume, float pitch)
@@ -184,11 +183,20 @@ public class SmartMovingServer
 		SmartMovingPacketStream.sendConfigContent(mp, optionsHandler.writeToProperties(mp, true), mp.getUsername());
 	}
 
+	public IEntityPlayerMP[] getAllPlayers() {
+		List<?> playerEntityList = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getPlayerList();
+		IEntityPlayerMP[] result = new IEntityPlayerMP[playerEntityList.size()];
+		for(int i=0; i<playerEntityList.size(); i++)
+			result[i] = (IEntityPlayerMP)((IServerPlayerAPI)playerEntityList.get(i)).getServerPlayerBase(SmartMovingInfo.ModName);
+		return result;
+	}
+
 	public void toggleConfig()
 	{
 		optionsHandler.toggle(mp);
 		String[] config = optionsHandler.writeToProperties();
-		IEntityPlayerMP[] players = mp.getAllPlayers();
+
+		IEntityPlayerMP[] players = getAllPlayers();
 		for(int n=0; n<players.length; n++)
 			SmartMovingPacketStream.sendConfigContent(players[n], config, mp.getUsername());
 	}
@@ -202,7 +210,7 @@ public class SmartMovingServer
 	public void changeSpeed(int difference)
 	{
 		optionsHandler.changeSpeed(difference, mp);
-		IEntityPlayerMP[] players = mp.getAllPlayers();
+		IEntityPlayerMP[] players = getAllPlayers();
 		for(int n=0; n<players.length; n++)
 			SmartMovingPacketStream.sendSpeedChange(players[n], difference, mp.getUsername());
 	}
@@ -257,15 +265,8 @@ public class SmartMovingServer
 			crawlingCooldown --;
 	}
 
-	public void beforeOnLivingUpdate()
-	{
-		withinOnLivingUpdate = true;
-	}
-
 	public void afterOnLivingUpdate()
 	{
-		withinOnLivingUpdate = false;
-
 		if(!isSmall)
 			return;
 
@@ -305,49 +306,19 @@ public class SmartMovingServer
 
 	public void addMovementStat(double var1, double var3, double var5)
 	{
-		beforeAddMovingHungerBatch();
 		mp.localAddMovementStat(var1, var3, var5);
-		if(disableAddExhaustion && hunger != 0 && !withinOnLivingUpdate)
-			mp.localAddExhaustion(hunger);
-		afterAddMovingHungerBatch();
 	}
 
-	public void beforeAddMovingHungerBatch()
-	{
-		disableAddExhaustionDepth++;
-		if(hunger != -1)
-			disableAddExhaustion = true;
-	}
 
 	public void addExhaustion(float exhaustion)
 	{
-		if(!disableAddExhaustion)
-			mp.localAddExhaustion(exhaustion);
+		mp.localAddExhaustion(exhaustion);
 	}
 
-	public void afterAddMovingHungerBatch()
-	{
-		disableAddExhaustionDepth--;
-		if(disableAddExhaustionDepth == 0)
-			disableAddExhaustion = false;
-	}
 
 	public boolean isSneaking()
 	{
-		if(forceIsSneaking != null)
-			return forceIsSneaking;
-
-		return mp.localIsSneaking();
-	}
-
-	public void beforeActivateBlockOrUseItem()
-	{
-		forceIsSneaking = isSneakButtonPressed;
-	}
-
-	public void afterActivateBlockOrUseItem()
-	{
-		forceIsSneaking = null;
+		return mp.getItemInUseCount() > 0 || mp.localIsSneaking();
 	}
 
 	public static SmartMovingConfig Options = null;
