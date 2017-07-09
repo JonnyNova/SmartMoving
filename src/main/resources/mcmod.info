@@ -8,5 +8,5 @@
   "url": "https://github.com/JonnyNova/SmartMoving.git",
   "authors": [ "Divisor", "JonnyNova" ],
   "dependencies": [ "PlayerAPI", "Smart Render", "SmartCore" ],
-  "requiredMods": [ "Forge@[12.18.1.2011,)", "Smart Render@[2.3,)", "PlayerAPI@[1.1,)" ]
+  "requiredMods": [ "Forge@[12.18.1.2011,)", "Smart Render@[2.3-RC1,)", "PlayerAPI@[1.1,)" ]
 }]
