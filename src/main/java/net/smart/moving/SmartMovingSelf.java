@@ -649,6 +649,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 	private float landMotion(float moveForward, float moveStrafing, float speedFactor, boolean isOnLadder, boolean isOnVine)
 	{
 		float horizontalDamping;
+		final boolean isUsingItem = sp.getItemInUseCount() > 0;
 		if(sp.onGround && !isJumping)
 		{
 			Block block = getBlock(MathHelper.floor_double(sp.posX), MathHelper.floor_double(getBoundingBox().minY) - 1, MathHelper.floor_double(sp.posZ));
@@ -751,14 +752,14 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 			}
 			if(Config.isFreeBaseClimb())
 			{
-				if(esp.movementInput.sneak && sp.motionY < 0.0D && !sp.onGround && notTotalFreeClimbing)
+				if(isUsingItem || esp.movementInput.sneak && sp.motionY < 0.0D && !sp.onGround && notTotalFreeClimbing)
 				{
 					sp.motionY = 0.0D;
 				}
 			}
 			else
 			{
-				if(isp.localIsSneaking() && sp.motionY < 0.0D)
+				if(isUsingItem || isp.localIsSneaking() && sp.motionY < 0.0D)
 				{
 					sp.motionY = 0.0D;
 				}
@@ -2088,7 +2089,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 			return Math.max(Math.abs(actual), Math.abs(move) * horizontal) * Math.signum(move);
 	}
 
-	private static int getJumpSpeed(boolean isStanding, boolean isSneaking, boolean isRunning, boolean isSprinting, Float angle)
+	private static int getJumpSpeed(boolean isStanding, boolean isSlow, boolean isRunning, boolean isSprinting, Float angle)
 	{
 		isSprinting &= angle == null;
 		isRunning &= angle == null;
@@ -2097,7 +2098,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 			return Config.Sprinting;
 		else if(isRunning)
 			return Config.Running;
-		else if(isSneaking)
+		else if(isSlow)
 			return Config.Sneaking;
 		else if(isStanding)
 			return Config.Standing;
@@ -2397,6 +2398,7 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 			grabButton.Pressed &&
 			!wantCrawlNotClimb &&
 			!isSneaking() &&
+			sp.getItemInUseCount() < 1 &&
 			!disabled;
 
 		boolean restoreFromFlying = false;
