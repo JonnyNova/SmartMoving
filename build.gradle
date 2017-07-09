@@ -45,7 +45,7 @@ configurations {
 dependencies {
     provided files("libs/PlayerAPI-1.10.2-1.1.jar")
     provided files("libs/RenderPlayerAPI-1.10.2-1.1.jar")
-    provided files("libs/SmartRender-1.10.2-2.3.jar")
+    compile project(":SmartRender")
 }
 
 idea.module.scopes.PROVIDED.plus += [configurations.provided]
