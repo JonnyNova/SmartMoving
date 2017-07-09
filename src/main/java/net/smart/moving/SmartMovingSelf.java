@@ -3113,7 +3113,10 @@ public class SmartMovingSelf extends SmartMoving implements ISmartMovingSelf
 	@Override
 	public boolean isSneaking()
 	{
-		return (sp.getItemInUseCount() > 0) || (isSlow && (sp.onGround || isp.getIsInWebField())) || (!Config._sneak.value && wouldIsSneaking && jumpCharge > 0) || ((sp.isRiding() || !Config.enabled) && isp.localIsSneaking()) || (!Config._crawlOverEdge.value && isCrawling && !isClimbing);
+		return (isSlow && (sp.onGround || isp.getIsInWebField()))
+				|| (!Config._sneak.value && wouldIsSneaking && jumpCharge > 0)
+				|| ((sp.isRiding() || !Config.enabled) && isp.localIsSneaking())
+				|| (!Config._crawlOverEdge.value && isCrawling && !isClimbing);
 	}
 
 	public boolean isStandupSprintingOrRunning()
